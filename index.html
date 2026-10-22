@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rukun Cipta Rimba (RCR) - Laporan Keuangan</title>
+    
+    <!-- Font Elegan (Playfair Display untuk Judul, Inter untuk teks data) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    
+    <!-- Memuat Papa Parse untuk membaca CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <style>
+        :root {
+            /* Palet Warna Hitam & Emas */
+            --bg-main: #0a0a0a;
+            --bg-card: #141414;
+            --gold-primary: #D4AF37;
+            --gold-light: #F9E596;
+            --gold-dark: #AA771C;
+            --text-light: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-gold: 1px solid rgba(212, 175, 55, 0.4);
+            
+            /* Gradien Emas Mewah */
+            --gold-gradient: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+            --glossy-overlay: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 40%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter',Arial;
+            background-color: var(--bg-main);
+            color: var(--text-light);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #0a0a0a 70%);
+        }
+
+        h1, h2, h3, .gold-text {
+            font-family: 'Playfair Display', serif;
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px 20px;
+            width: 100%;
+            flex: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: clamp(34px, 5vw, 42px);
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(212, 175, 55, 0.2);
+        }
+
+        .header p {
+            color: var(white);
+            font-size: 16px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        .dashboard-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        .glossy-card {
+            background-color: var(--bg-card);
+            border: var(--border-gold);
+            border-radius: 16px;
+            padding: 30px;
+            min-width: 280px;
+            flex: 1;
+            max-width: 350px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8), 
+                        inset 0 0 20px rgba(212,175,55,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Efek Kilap (Glossy) di bagian atas kartu */
+        .glossy-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 100%;
+            background: var(--glossy-overlay);
+            pointer-events: none;
+        }
+
+        .glossy-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px -10px rgba(212,175,55,0.2), 
+                        inset 0 0 20px rgba(212,175,55,0.1);
+        }
+
+        .glossy-card h3 {
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-muted);
+            -webkit-text-fill-color: var(--text-muted); /* Override gradient for subtitle */
+        }
+
+        .glossy-card p.amount {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .btn-gold {
+            background: var(--gold-gradient);
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-gold:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(212, 175, 55, 0.5);
+        }
+
+        .btn-text-gold {
+            background: none;
+            border: none;
+            color: var(--gold-primary);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s;
+        }
+
+        .btn-text-gold:hover {
+            color: var(--gold-light);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        .table-view {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .table-wrapper {
+            background-color: var(--bg-card);
+            border: var(--border-gold);
+            border-radius: 12px;
+            overflow-x: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        th {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold-primary);
+            font-weight: 600;
+            letter-spacing: 1px;
+            background-color: rgba(0,0,0,0.3);
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        td {
+            font-size: 14px;
+            color: #d1d5db;
+        }
+
+        tbody tr {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(212, 175, 55, 0.1);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--gold-dark);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.9),
+                        0 0 30px rgba(212,175,55,0.15),
+                        inset 0 0 20px rgba(212,175,55,0.05);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            overflow: hidden;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        /* Glossy overlay untuk modal */
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 120px;
+            background: var(--glossy-overlay);
+            pointer-events: none;
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: var(--border-gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--gold-primary);
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-light);
+        }
+
+        .modal-body {
+            padding: 25px;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .modal-body::-webkit-scrollbar { width: 6px; }
+        .modal-body::-webkit-scrollbar-thumb { background-color: var(--gold-dark); border-radius: 10px; }
+
+        .detail-row {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .detail-value {
+            font-size: 15px;
+            word-break: break-word;
+        }
+
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 50vh;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(212, 175, 55, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--gold-primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .error-text { color: #ef4444; margin-top: 10px; }
+
+        /* Pagination sederhana */
+        .pagination { display: flex; justify-content: center; gap: 10px; padding: 20px; border-top: var(--border-gold); }
+        .page-btn { background: transparent; border: 1px solid var(--gold-dark); color: var(--gold-primary); padding: 5px 15px; border-radius: 5px; cursor: pointer; transition: 0.2s;}
+        .page-btn:hover:not(:disabled) { background: var(--gold-dark); color: #000; }
+        .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="header">
+            <h1>Rukun Cipta Rimba (RCR)</h1>
+            <p>Laporan Keuangan</p>
+        </div>
+
+        <!-- Indikator Loading -->
+        <div id="loadingView" class="loading-screen">
+            <div class="spinner"></div>
+            <p style="color: var(--gold-primary);">Mengambil data dari server...</p>
+            <p id="errorMsg" class="error-text hidden"></p>
+        </div>
+
+        <!-- Halaman Utama (Dashboard) -->
+        <div id="dashboardView" class="dashboard-view hidden">
+            <div class="cards-container">
+                <div class="glossy-card">
+                    <h3>Saldo Saat Ini</h3>
+                    <p class="amount gold-text" id="txtSaldo">Rp 0</p>
+                </div>
+                <div class="glossy-card">
+                    <h3>Total Pemasukan</h3>
+                    <p class="amount gold-text" id="txtMasuk">Rp 0</p>
+                </div>
+                <div class="glossy-card">
+                    <h3>Total Pengeluaran</h3>
+                    <p class="amount gold-text" id="txtKeluar">Rp 0</p>
+                </div>
+            </div>
+            
+            <button id="btnLihatLaporan" class="btn-gold">
+                Lihat Laporan Detail
+            </button>
+        </div>
+
+        <!-- Halaman Tabel Data -->
+        <div id="tableView" class="table-view hidden">
+            <div class="table-controls">
+                <button id="btnKembali" class="btn-text-gold">
+                    &#8592; Kembali ke Ringkasan
+                </button>
+                <div style="color: var(--gold-primary); font-size: 14px;" id="dataInfo">
+                    Memuat baris...
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="dataTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+                <div class="pagination">
+                    <button id="btnPrev" class="page-btn">Sebelumnya</button>
+                    <span id="pageIndicator" style="color:var(--gold-primary); line-height:30px; font-size: 14px;">Hal 1</span>
+                    <button id="btnNext" class="page-btn">Selanjutnya</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="detailModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="gold-text">Detail Transaksi</h2>
+                <button class="close-btn" id="btnCloseModal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Data akan disuntikkan ke sini -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // URL Data
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS4ZrqA7Hkcy3BvMhFy0KKr7K7X__CGIj0svMyzmcvtEcek1vv6TY6-hQDzoHiwxZkkOgv8FfjpBrLi/pub?output=csv';
+        
+        // State Manajemen Data
+        let globalData = [];
+        let headers = [];
+        
+        // State Pagination
+        let currentPage = 1;
+        const rowsPerPage = 20;
+
+        // Referensi Elemen DOM
+        const elLoading = document.getElementById('loadingView');
+        const elErrorMsg = document.getElementById('errorMsg');
+        const elDashboard = document.getElementById('dashboardView');
+        const elTable = document.getElementById('tableView');
+        
+        const btnLihatLaporan = document.getElementById('btnLihatLaporan');
+        const btnKembali = document.getElementById('btnKembali');
+        
+        const modal = document.getElementById('detailModal');
+        const btnCloseModal = document.getElementById('btnCloseModal');
+        const modalBody = document.getElementById('modalBody');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchCSVData();
+            setupEvents();
+        });
+
+        // Menggunakan Fetch standar untuk memastikan koneksi terbangun
+        function fetchCSVData() {
+            fetch(csvUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error("Jaringan bermasalah atau URL salah.");
+                    return response.text();
+                })
+                .then(csvText => {
+                    // Parsing text CSV menggunakan PapaParse
+                    Papa.parse(csvText, {
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: function(results) {
+                            if (results.data && results.data.length > 0) {
+                                globalData = results.data;
+                                headers = results.meta.fields;
+                                
+                                processKalkulasi(globalData);
+                                renderTableHeaders();
+                                renderTableBody();
+                                
+                                // Ganti Tampilan
+                                elLoading.classList.add('hidden');
+                                elDashboard.classList.remove('hidden');
+                            } else {
+                                throw new Error("Data CSV kosong atau format tidak sesuai.");
+                            }
+                        },
+                        error: function(err) {
+                            throw new Error("Gagal membaca struktur data CSV.");
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error(error);
+                    elLoading.querySelector('.spinner').classList.add('hidden');
+                    elLoading.querySelector('p').classList.add('hidden');
+                    elErrorMsg.textContent = "Gagal memuat data: " + error.message;
+                    elErrorMsg.classList.remove('hidden');
+                });
+        }
+
+        function processKalkulasi(data) {
+            let totalMasuk = 0;
+            let totalKeluar = 0;
+
+            // Mendeteksi nama kolom secara dinamis (mengandung kata 'masuk' atau 'keluar')
+            const colMasuk = headers.find(h => h.toLowerCase().includes('masuk'));
+            const colKeluar = headers.find(h => h.toLowerCase().includes('keluar'));
+
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
+                
+                if (colMasuk && row[colMasuk]) {
+                    // Bersihkan karakter non-angka
+                    const val = String(row[colMasuk]).replace(/[^0-9]/g, '');
+                    if (val) totalMasuk += parseInt(val, 10);
+                }
+                
+                if (colKeluar && row[colKeluar]) {
+                    const val = String(row[colKeluar]).replace(/[^0-9]/g, '');
+                    if (val) totalKeluar += parseInt(val, 10);
+                }
+            }
+
+            const saldo = totalMasuk - totalKeluar;
+
+            // Format Rupiah
+            const formatter = new Intl.NumberFormat('id-ID', { 
+                style: 'currency', 
+                currency: 'IDR', 
+                minimumFractionDigits: 0 
+            });
+
+            document.getElementById('txtMasuk').textContent = formatter.format(totalMasuk);
+            document.getElementById('txtKeluar').textContent = formatter.format(totalKeluar);
+            document.getElementById('txtSaldo').textContent = formatter.format(saldo);
+        }
+
+        function renderTableHeaders() {
+            const tr = document.createElement('tr');
+            headers.forEach(h => {
+                const th = document.createElement('th');
+                th.textContent = h;
+                tr.appendChild(th);
+            });
+            const thead = document.getElementById('tableHead');
+            thead.innerHTML = '';
+            thead.appendChild(tr);
+        }
+
+        function renderTableBody() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            const totalPages = Math.ceil(globalData.length / rowsPerPage) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, globalData.length);
+            
+            const dataPage = globalData.slice(startIndex, endIndex);
+            const fragment = document.createDocumentFragment();
+
+            dataPage.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.addEventListener('click', () => showModal(row));
+
+                headers.forEach(h => {
+                    const td = document.createElement('td');
+                    let val = row[h] || '';
+                    if (val.length > 50) val = val.substring(0, 50) + '...';
+                    td.textContent = val;
+                    tr.appendChild(td);
+                });
+                fragment.appendChild(tr);
+            });
+
+            tbody.appendChild(fragment);
+            
+            // Update UI Pagination
+            document.getElementById('pageIndicator').textContent = `Hal ${currentPage} dari ${totalPages}`;
+            document.getElementById('btnPrev').disabled = currentPage === 1;
+            document.getElementById('btnNext').disabled = currentPage === totalPages;
+            document.getElementById('dataInfo').textContent = `Total: ${globalData.length} Data`;
+        }
+
+        function showModal(rowData) {
+            modalBody.innerHTML = '';
+            const frag = document.createDocumentFragment();
+
+            headers.forEach(h => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'detail-row';
+
+                const label = document.createElement('div');
+                label.className = 'detail-label';
+                label.textContent = h;
+
+                const value = document.createElement('div');
+                value.className = 'detail-value';
+                value.textContent = rowData[h] || '-';
+
+                rowDiv.appendChild(label);
+                rowDiv.appendChild(value);
+                frag.appendChild(rowDiv);
+            });
+
+            modalBody.appendChild(frag);
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        function setupEvents() {
+            // Navigasi Tampilan
+            btnLihatLaporan.addEventListener('click', () => {
+                elDashboard.classList.add('hidden');
+                elTable.classList.remove('hidden');
+            });
+
+            btnKembali.addEventListener('click', () => {
+                elTable.classList.add('hidden');
+                elDashboard.classList.remove('hidden');
+            });
+
+            // Pagination
+            document.getElementById('btnPrev').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTableBody();
+                }
+            });
+
+            document.getElementById('btnNext').addEventListener('click', () => {
+                const totalPages = Math.ceil(globalData.length / rowsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTableBody();
+                }
+            });
+
+            // Modal
+            btnCloseModal.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+        }
+    </script>
+</body>
+</html>
