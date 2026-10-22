@@ -37,7 +37,7 @@
         }
 
         body {
-            font-family: 'Inter',Arial;
+            font-family: 'Inter', Arial, sans-serif;
             background-color: var(--bg-main);
             color: var(--text-light);
             line-height: 1.6;
@@ -78,7 +78,7 @@
         }
 
         .header p {
-            color: var(white);
+            color: #ffffff;
             font-size: 16px;
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -117,7 +117,6 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* Efek Kilap (Glossy) di bagian atas kartu */
         .glossy-card::before {
             content: '';
             position: absolute;
@@ -139,7 +138,7 @@
             margin-bottom: 15px;
             font-family: 'Inter', sans-serif;
             color: var(--text-muted);
-            -webkit-text-fill-color: var(--text-muted); /* Override gradient for subtitle */
+            -webkit-text-fill-color: var(--text-muted); 
         }
 
         .glossy-card p.amount {
@@ -293,7 +292,6 @@
             transform: translateY(0);
         }
 
-        /* Glossy overlay untuk modal */
         .modal-content::before {
             content: '';
             position: absolute;
@@ -411,7 +409,7 @@
         <!-- Indikator Loading -->
         <div id="loadingView" class="loading-screen">
             <div class="spinner"></div>
-            <p style="color: var(--gold-primary);">Sinkron data ...</p>
+            <p style="color: var(--gold-primary);">Mengambil data dari server...</p>
             <p id="errorMsg" class="error-text hidden"></p>
         </div>
 
@@ -547,32 +545,50 @@
                 });
         }
 
+        // Fungsi helper untuk membersihkan format Rupiah atau angka desimal dari CSV
+        function parseRupiah(val) {
+            if (!val) return 0;
+            // Menghapus 'Rp', spasi, dan karakter yang tidak relevan
+            let str = String(val).replace(/Rp/gi, '').trim();
+            // Menangani format ribuan dengan titik (contoh: 10.000 menjadi 10000)
+            str = str.replace(/\./g, ''); 
+            // Menangani jika ada koma sebagai desimal (opsional, tergantung format CSV Anda)
+            str = str.replace(',', '.'); 
+            // Menghapus karakter selain angka, minus, dan titik desimal
+            str = str.replace(/[^\d.-]/g, '');
+            
+            let num = parseFloat(str);
+            return isNaN(num) ? 0 : num;
+        }
+
         function processKalkulasi(data) {
             let totalMasuk = 0;
             let totalKeluar = 0;
 
-            // Mendeteksi nama kolom secara dinamis (mengandung kata 'masuk' atau 'keluar')
-            const colMasuk = headers.find(h => h.toLowerCase().includes('masuk'));
-            const colKeluar = headers.find(h => h.toLowerCase().includes('keluar'));
+            // Menggunakan kolom spesifik sesuai urutan:
+            // headers[3] = Kolom ke-4 (Pengeluaran)
+            // headers[4] = Kolom ke-5 (Pemasukan)
+            const colKeluar = headers[3];
+            const colMasuk = headers[4];
 
             for (let i = 0; i < data.length; i++) {
                 const row = data[i];
                 
+                // Kalkulasi total pemasukan berdasarkan Kolom 5
                 if (colMasuk && row[colMasuk]) {
-                    // Bersihkan karakter non-angka
-                    const val = String(row[colMasuk]).replace(/[^0-9]/g, '');
-                    if (val) totalMasuk += parseInt(val, 10);
+                    totalMasuk += parseRupiah(row[colMasuk]);
                 }
                 
+                // Kalkulasi total pengeluaran berdasarkan Kolom 4
                 if (colKeluar && row[colKeluar]) {
-                    const val = String(row[colKeluar]).replace(/[^0-9]/g, '');
-                    if (val) totalKeluar += parseInt(val, 10);
+                    totalKeluar += parseRupiah(row[colKeluar]);
                 }
             }
 
+            // Saldo = Total Pemasukan (Kolom 5) - Total Pengeluaran (Kolom 4)
             const saldo = totalMasuk - totalKeluar;
 
-            // Format Rupiah
+            // Format angka menjadi standar Rupiah Indonesia
             const formatter = new Intl.NumberFormat('id-ID', { 
                 style: 'currency', 
                 currency: 'IDR', 
