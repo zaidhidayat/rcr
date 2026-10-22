@@ -5,17 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rukun Cipta Rimba (RCR) - Laporan Keuangan</title>
     
-    <!-- Font Elegan (Playfair Display untuk Judul, Inter untuk teks data) -->
+    <!-- Memuat Font dan Library Eksternal -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-    
-    <!-- Memuat Papa Parse untuk membaca CSV -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <style>
         :root {
-            /* Palet Warna Hitam & Emas */
+            /* Tema Utama (Dark Mode) */
             --bg-main: #0a0a0a;
             --bg-card: #141414;
             --gold-primary: #D4AF37;
@@ -25,9 +23,21 @@
             --text-muted: #9ca3af;
             --border-gold: 1px solid rgba(212, 175, 55, 0.4);
             
-            /* Gradien Emas Mewah */
             --gold-gradient: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
             --glossy-overlay: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 40%);
+
+            /* Tema Khusus Modal Detail (Light Mode) */
+            --modal-bg: #ffffff;
+            --modal-header-bg: #f9fafb;
+            --modal-text: #111827;
+            --modal-text-muted: #6b7280;
+            --modal-border: #e5e7eb;
+            --modal-gold: #b48608; 
+            --modal-gold-gradient: linear-gradient(135deg, #b48608, #d4af37, #8a6300);
+            
+            /* Warna Warok Topeng Ireng */
+            --warok-red: #dc2626;
+            --warok-black: #050505;
         }
 
         * {
@@ -59,30 +69,62 @@
         .app-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 10px 20px;
+            padding: 20px 20px;
             width: 100%;
             flex: 1;
         }
 
         .header {
             text-align: center;
+            margin-bottom: 20px;
+            padding-top: 0px;
+            transition: opacity 0.3s ease, height 0.3s ease;
+        }
+
+        /* TEMA WAROK TOPENG IRENG UNTUK TULISAN RCR */
+        .rcr-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(100px, 15vw, 140px);
+            font-weight: 900;
+            line-height: 1;
             margin-bottom: 5px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            
+            /* Warna Hitam Pekat dengan Garis Tepi Putih */
+            color: var(--warok-black);
+            -webkit-text-stroke: 2px #ffffff;
+            
+            /* Bayangan Bertumpuk: Merah Menyala dan Emas (Garang & Magis) */
+            text-shadow: 
+                5px 5px 0 var(--warok-red),
+                10px 10px 0 var(--gold-dark),
+                0 0 40px rgba(220, 38, 38, 0.5);
+            
+            position: relative;
+            display: inline-block;
+            animation: fadeInLogo 1s ease-out;
+        }
+
+        @keyframes fadeInLogo {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         .header h1 {
-            font-size: clamp(34px, 5vw, 42px);
+            font-size: clamp(24px, 4vw, 32px);
             font-weight: 700;
             margin-bottom: 5px;
-            letter-spacing: 1px;
-            text-shadow: 0 2px 10px rgba(212, 175, 55, 0.2);
+            letter-spacing: 1.5px;
         }
 
         .header p {
             color: #ffffff;
-            font-size: 16px;
-            letter-spacing: 2px;
+            font-size: 15px;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            opacity: 0.6;
+            margin-bottom: 25px;
+            opacity: 0.7;
         }
 
         .dashboard-view {
@@ -98,14 +140,14 @@
             justify-content: center;
             gap: 10px;
             width: 100%;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .glossy-card {
             background-color: var(--bg-card);
             border: var(--border-gold);
             border-radius: 16px;
-            padding: 30px;
+            padding: 10px;
             min-width: 280px;
             flex: 1;
             max-width: 350px;
@@ -132,17 +174,17 @@
         }
 
         .glossy-card h3 {
-            font-size: 16px;
+            font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             font-family: 'Inter', sans-serif;
             color: var(--text-muted);
             -webkit-text-fill-color: var(--text-muted); 
         }
 
         .glossy-card p.amount {
-            font-size: 32px;
+            font-size: 26px;
             font-weight: 700;
             margin: 0;
             font-family: Arial;
@@ -211,7 +253,6 @@
             border-radius: 12px;
             overflow-x: auto;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            position: relative;
         }
 
         table {
@@ -271,8 +312,8 @@
         }
 
         .modal-content {
-            background: var(--bg-card);
-            border: 2px solid var(--gold-dark);
+            background: var(--modal-bg);
+            border: 2px solid var(--modal-gold);
             border-radius: 16px;
             width: 100%;
             max-width: 500px;
@@ -281,44 +322,40 @@
             flex-direction: column;
             position: relative;
             box-shadow: 0 25px 50px rgba(0,0,0,0.9),
-                        0 0 30px rgba(212,175,55,0.15),
-                        inset 0 0 20px rgba(212,175,55,0.05);
+                        0 0 30px rgba(180, 134, 8, 0.2);
             transform: translateY(20px);
             transition: transform 0.3s ease;
             overflow: hidden;
+            color: var(--modal-text);
         }
 
         .modal-overlay.active .modal-content {
             transform: translateY(0);
         }
 
-        .modal-content::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 120px;
-            background: var(--glossy-overlay);
-            pointer-events: none;
-        }
-
         .modal-header {
             padding: 20px 25px;
-            border-bottom: var(--border-gold);
+            border-bottom: 1px solid var(--modal-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: relative;
-            z-index: 1;
+            background-color: var(--modal-header-bg);
         }
 
         .modal-header h2 {
             font-size: 20px;
             margin: 0;
+            background: var(--modal-gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
         }
 
         .close-btn {
             background: none;
             border: none;
-            color: var(--gold-primary);
+            color: var(--modal-text-muted);
             font-size: 28px;
             cursor: pointer;
             line-height: 1;
@@ -326,23 +363,21 @@
         }
 
         .close-btn:hover {
-            color: var(--text-light);
+            color: var(--modal-text);
         }
 
         .modal-body {
             padding: 25px;
             overflow-y: auto;
-            position: relative;
-            z-index: 1;
         }
 
         .modal-body::-webkit-scrollbar { width: 6px; }
-        .modal-body::-webkit-scrollbar-thumb { background-color: var(--gold-dark); border-radius: 10px; }
+        .modal-body::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
 
         .detail-row {
             margin-bottom: 16px;
             padding-bottom: 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px dashed var(--modal-border);
         }
         
         .detail-row:last-child {
@@ -353,16 +388,18 @@
 
         .detail-label {
             font-size: 12px;
-            color: var(--gold-primary);
+            color: var(--modal-gold);
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 4px;
             font-family: 'Playfair Display', serif;
+            font-weight: 700;
         }
 
         .detail-value {
             font-size: 15px;
             word-break: break-word;
+            font-weight: 500;
         }
 
         .loading-screen {
@@ -390,7 +427,6 @@
         .text-center { text-align: center; }
         .error-text { color: #ef4444; margin-top: 10px; }
 
-        /* Pagination sederhana */
         .pagination { display: flex; justify-content: center; gap: 10px; padding: 20px; border-top: var(--border-gold); }
         .page-btn { background: transparent; border: 1px solid var(--gold-dark); color: var(--gold-primary); padding: 5px 15px; border-radius: 5px; cursor: pointer; transition: 0.2s;}
         .page-btn:hover:not(:disabled) { background: var(--gold-dark); color: #000; }
@@ -401,19 +437,23 @@
 
     <div class="app-container">
         
-        <div class="header">
-            <h1>Rukun Cipta Rimba (RCR)</h1>
+        <div id="mainHeader" class="header">
+            <!-- LOGO RCR BERTEMA WAROK TOPENG IRENG -->
+            <div class="rcr-logo">RCR</div>
+            
+            <h1>Rukun Cipta Rimba</h1>
             <p>Laporan Keuangan</p>
         </div>
 
-        <!-- Indikator Loading -->
         <div id="loadingView" class="loading-screen">
             <div class="spinner"></div>
-            <p style="color: var(--gold-primary);">Mengambil data dari server...</p>
+            <p style="color: var(--gold-primary);">Sinkron data ...</p>
             <p id="errorMsg" class="error-text hidden"></p>
         </div>
+        
+        <br>
+        <br>
 
-        <!-- Halaman Utama (Dashboard) -->
         <div id="dashboardView" class="dashboard-view hidden">
             <div class="cards-container">
                 <div class="glossy-card">
@@ -429,13 +469,13 @@
                     <p class="amount gold-text" id="txtKeluar">Rp 0</p>
                 </div>
             </div>
-            
+            <br>
+            <br>
             <button id="btnLihatLaporan" class="btn-gold">
                 Lihat Laporan Detail
             </button>
         </div>
 
-        <!-- Halaman Tabel Data -->
         <div id="tableView" class="table-view hidden">
             <div class="table-controls">
                 <button id="btnKembali" class="btn-text-gold">
@@ -464,7 +504,7 @@
     <div id="detailModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="gold-text">Detail Transaksi</h2>
+                <h2>Detail Transaksi</h2>
                 <button class="close-btn" id="btnCloseModal">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
@@ -474,18 +514,15 @@
     </div>
 
     <script>
-        // URL Data
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS4ZrqA7Hkcy3BvMhFy0KKr7K7X__CGIj0svMyzmcvtEcek1vv6TY6-hQDzoHiwxZkkOgv8FfjpBrLi/pub?output=csv';
         
-        // State Manajemen Data
         let globalData = [];
         let headers = [];
         
-        // State Pagination
         let currentPage = 1;
         const rowsPerPage = 20;
 
-        // Referensi Elemen DOM
+        const elHeader = document.getElementById('mainHeader');
         const elLoading = document.getElementById('loadingView');
         const elErrorMsg = document.getElementById('errorMsg');
         const elDashboard = document.getElementById('dashboardView');
@@ -503,7 +540,6 @@
             setupEvents();
         });
 
-        // Menggunakan Fetch standar untuk memastikan koneksi terbangun
         function fetchCSVData() {
             fetch(csvUrl)
                 .then(response => {
@@ -511,7 +547,6 @@
                     return response.text();
                 })
                 .then(csvText => {
-                    // Parsing text CSV menggunakan PapaParse
                     Papa.parse(csvText, {
                         header: true,
                         skipEmptyLines: true,
@@ -524,7 +559,6 @@
                                 renderTableHeaders();
                                 renderTableBody();
                                 
-                                // Ganti Tampilan
                                 elLoading.classList.add('hidden');
                                 elDashboard.classList.remove('hidden');
                             } else {
@@ -545,50 +579,44 @@
                 });
         }
 
-        // Fungsi helper untuk membersihkan format Rupiah atau angka desimal dari CSV
         function parseRupiah(val) {
             if (!val) return 0;
-            // Menghapus 'Rp', spasi, dan karakter yang tidak relevan
             let str = String(val).replace(/Rp/gi, '').trim();
-            // Menangani format ribuan dengan titik (contoh: 10.000 menjadi 10000)
             str = str.replace(/\./g, ''); 
-            // Menangani jika ada koma sebagai desimal (opsional, tergantung format CSV Anda)
             str = str.replace(',', '.'); 
-            // Menghapus karakter selain angka, minus, dan titik desimal
             str = str.replace(/[^\d.-]/g, '');
             
             let num = parseFloat(str);
             return isNaN(num) ? 0 : num;
         }
 
+        function formatRibuanUntukTeks(teks) {
+            if (teks === null || teks === undefined || teks === '') return '-';
+            let str = teks.toString().trim();
+            
+            if (/^-?\d+$/.test(str)) {
+                return new Intl.NumberFormat('id-ID').format(str);
+            }
+            
+            return str.replace(/\d{4,}/g, function(match) {
+                return new Intl.NumberFormat('id-ID').format(match);
+            });
+        }
+
         function processKalkulasi(data) {
             let totalMasuk = 0;
             let totalKeluar = 0;
 
-            // Menggunakan kolom spesifik sesuai urutan:
-            // headers[3] = Kolom ke-4 (Pengeluaran)
-            // headers[4] = Kolom ke-5 (Pemasukan)
             const colKeluar = headers[3];
             const colMasuk = headers[4];
 
             for (let i = 0; i < data.length; i++) {
                 const row = data[i];
-                
-                // Kalkulasi total pemasukan berdasarkan Kolom 5
-                if (colMasuk && row[colMasuk]) {
-                    totalMasuk += parseRupiah(row[colMasuk]);
-                }
-                
-                // Kalkulasi total pengeluaran berdasarkan Kolom 4
-                if (colKeluar && row[colKeluar]) {
-                    totalKeluar += parseRupiah(row[colKeluar]);
-                }
+                if (colMasuk && row[colMasuk]) totalMasuk += parseRupiah(row[colMasuk]);
+                if (colKeluar && row[colKeluar]) totalKeluar += parseRupiah(row[colKeluar]);
             }
 
-            // Saldo = Total Pemasukan (Kolom 5) - Total Pengeluaran (Kolom 4)
             const saldo = totalMasuk - totalKeluar;
-
-            // Format angka menjadi standar Rupiah Indonesia
             const formatter = new Intl.NumberFormat('id-ID', { 
                 style: 'currency', 
                 currency: 'IDR', 
@@ -631,7 +659,7 @@
 
                 headers.forEach(h => {
                     const td = document.createElement('td');
-                    let val = row[h] || '';
+                    let val = row[h] || '-';
                     if (val.length > 50) val = val.substring(0, 50) + '...';
                     td.textContent = val;
                     tr.appendChild(td);
@@ -641,18 +669,17 @@
 
             tbody.appendChild(fragment);
             
-            // Update UI Pagination
             document.getElementById('pageIndicator').textContent = `Hal ${currentPage} dari ${totalPages}`;
             document.getElementById('btnPrev').disabled = currentPage === 1;
             document.getElementById('btnNext').disabled = currentPage === totalPages;
-            document.getElementById('dataInfo').textContent = `Total: ${globalData.length} Data`;
+            document.getElementById('dataInfo').textContent = `Total: ${globalData.length} Transaksi`;
         }
 
         function showModal(rowData) {
             modalBody.innerHTML = '';
             const frag = document.createDocumentFragment();
 
-            headers.forEach(h => {
+            headers.forEach((h, index) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'detail-row';
 
@@ -662,7 +689,32 @@
 
                 const value = document.createElement('div');
                 value.className = 'detail-value';
-                value.textContent = rowData[h] || '-';
+
+                // Modifikasi Logika Formatting
+                let valRaw = rowData[h];
+                let valStr = (valRaw !== undefined && valRaw !== null) ? valRaw.toString().trim() : '';
+                let headerLower = h.toLowerCase();
+
+                if (valStr === '') {
+                    value.textContent = '-';
+                } else if (index === 1) {
+                    // Jangan pakai pemisah ribuan untuk kolom 2
+                    value.textContent = valStr;
+                } else if (headerLower.includes('tanggal') || headerLower.includes('waktu') || headerLower.includes('date')) {
+                    // Jangan pakai pemisah ribuan untuk tanggal
+                    value.textContent = valStr;
+                } else if (headerLower.includes('masuk') || headerLower.includes('keluar') || headerLower.includes('saldo') || headerLower.includes('pemasukan') || headerLower.includes('pengeluaran')) {
+                    // Beri format Rp untuk nilai moneter
+                    let num = parseRupiah(valStr);
+                    value.textContent = new Intl.NumberFormat('id-ID', { 
+                        style: 'currency', 
+                        currency: 'IDR', 
+                        minimumFractionDigits: 0 
+                    }).format(num);
+                } else {
+                    // Default fallback jika berupa angka
+                    value.textContent = formatRibuanUntukTeks(valStr);
+                }
 
                 rowDiv.appendChild(label);
                 rowDiv.appendChild(value);
@@ -678,18 +730,18 @@
         }
 
         function setupEvents() {
-            // Navigasi Tampilan
             btnLihatLaporan.addEventListener('click', () => {
                 elDashboard.classList.add('hidden');
+                elHeader.classList.add('hidden'); // Menyembunyikan judul
                 elTable.classList.remove('hidden');
             });
 
             btnKembali.addEventListener('click', () => {
                 elTable.classList.add('hidden');
                 elDashboard.classList.remove('hidden');
+                elHeader.classList.remove('hidden'); // Menampilkan judul kembali
             });
 
-            // Pagination
             document.getElementById('btnPrev').addEventListener('click', () => {
                 if (currentPage > 1) {
                     currentPage--;
@@ -705,7 +757,6 @@
                 }
             });
 
-            // Modal
             btnCloseModal.addEventListener('click', closeModal);
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) closeModal();
